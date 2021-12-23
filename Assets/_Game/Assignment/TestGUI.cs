@@ -1,16 +1,19 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UnityEditorInternal;
 
 namespace assignment
 {
     public class TestGUI : EditorWindow
     {
+        // ReorderableList ???
         string myString = "Hello World";
         bool groupEnabled;
         static bool _Logs;
@@ -42,22 +45,13 @@ namespace assignment
             }
         }
         private static void ForEachChildInTransform(Transform transform)
-        {
+        { 
             GUILayout.BeginVertical();
            transform.name = EditorGUILayout.TextField("Name", transform.name);
            transform.tag = EditorGUILayout.TextField("Tag", transform.tag);
-         /*   if (transform.GetComponent(typeof(Event)) is Event)
+           foreach (Component c in transform.GetComponents<Component>())
            {
-               foreach ()
-               {
-                   EditorGUILayout.TextField("Event", transform.tag)
-               }
-           }*/
-           
-           _Logs = GUILayout.Button("Toggle logs from " + transform.name);
-           if (_Logs)
-           {
-               ToggleLogs(transform);
+               OnValidFields(c);
            }
            GUILayout.Space(10);
            GUILayout.EndVertical();
@@ -66,9 +60,41 @@ namespace assignment
                 ForEachChildInTransform(child);
             }
         }
-        private static void ToggleLogs(Transform transform)
+        private static void OnValidFields(Component component) // based on David's code, checks for and displays events
         {
-          Debug.Log("Trying to toggle data for id " + transform.gameObject.GetInstanceID());
+            const BindingFlags bindingFlags =
+                BindingFlags.NonPublic
+                | BindingFlags.Instance
+                | BindingFlags.Public;
+
+            var type = component.GetType();
+            IEnumerable<FieldInfo> fields = type.GetFields(bindingFlags)
+                .Where
+                (
+                    item => typeof(DefaultNamespace.ScriptableEvents.ScriptableEventBase)
+                        .IsAssignableFrom(item.FieldType)
+                );
+
+            foreach (var field in fields) 
+            {
+                EditorGUILayout.LabelField("Event", field.Name);
+                _Logs = GUILayout.Button("Toggle Event Data");
+                if (_Logs)
+                {
+                    if (field.FieldType.Equals(typeof(Event)))
+                    {
+                        var next = EditorGUILayout.IntField((int) field.GetValue(component));
+                        field.SetValue(component, next);
+                        //(event)field.GetValue(component) += OnEventTriggered();
+                    //    field.SetValue(); += OnEventTriggered();
+                    }
+                }
+            }
+        }
+
+        private static void OnEventTriggered()
+        {
+            //Debug.Log("Event " + name + " triggered with value " + value);
         }
     }
 }
