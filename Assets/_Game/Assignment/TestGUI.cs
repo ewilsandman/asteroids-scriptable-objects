@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -11,31 +13,26 @@ namespace assignment
     {
         string myString = "Hello World";
         bool groupEnabled;
-        bool myBool = true;
+        static bool _Logs;
         bool _Button;
-        float myFloat = 1.23f;
-
-        // Add menu named "My Window" to the Window menu
+        private Vector2 scroll;
+        
         [MenuItem("Window/Test Window")]
         static void Init()
         {
-            // Get existing open window or if none, make a new one:
             TestGUI window = (TestGUI)EditorWindow.GetWindow(typeof(TestGUI));
             window.Show();
         }
         void OnGUI()
         {
-            GUILayout.Label("Base Settings", EditorStyles.boldLabel);
-            myString = EditorGUILayout.TextField("Text Field", myString);
+            _Logs = false;
+            scroll = GUILayout.BeginScrollView(scroll);
             _Button = EditorGUILayout.Toggle("Refresh", _Button);
-            groupEnabled = EditorGUILayout.BeginToggleGroup("Optional Settings", groupEnabled);
-            myBool = EditorGUILayout.Toggle("Toggle", myBool);
-            myFloat = EditorGUILayout.Slider("Slider", myFloat, -3, 3);
-            EditorGUILayout.EndToggleGroup();
             if (_Button)
             {
                 ForEachRootGameObjectInScene(SceneManager.GetActiveScene());
             }
+            GUILayout.EndScrollView();
         }
         private static void ForEachRootGameObjectInScene(Scene scene)
         {
@@ -47,13 +44,31 @@ namespace assignment
         private static void ForEachChildInTransform(Transform transform)
         {
             GUILayout.BeginVertical();
-            EditorGUILayout.TextField(transform.name);
-            GUILayout.EndVertical();
+           transform.name = EditorGUILayout.TextField("Name", transform.name);
+           transform.tag = EditorGUILayout.TextField("Tag", transform.tag);
+           if (transform.GetComponent(typeof(Event)) is Event)
+           {
+               foreach ()
+               {
+                   EditorGUILayout.TextField("Event", transform.tag)
+               }
+           }
+           
+           _Logs = GUILayout.Button("Toggle logs from " + transform.name);
+           if (_Logs)
+           {
+               ToggleLogs(transform);
+           }
+           GUILayout.Space(10);
+           GUILayout.EndVertical();
             for (int i = 0; i < transform.childCount; i++) {
                 var child = transform.GetChild(i);
                 ForEachChildInTransform(child);
             }
         }
-
+        private static void ToggleLogs(Transform transform)
+        {
+          Debug.Log("Trying to toggle data for id " + transform.gameObject.GetInstanceID());
+        }
     }
 }
