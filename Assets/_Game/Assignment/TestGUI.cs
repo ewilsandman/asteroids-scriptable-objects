@@ -46,13 +46,13 @@ namespace assignment
             GUILayout.BeginVertical();
            transform.name = EditorGUILayout.TextField("Name", transform.name);
            transform.tag = EditorGUILayout.TextField("Tag", transform.tag);
-           if (transform.GetComponent(typeof(Event)) is Event)
+         /*   if (transform.GetComponent(typeof(Event)) is Event)
            {
                foreach ()
                {
                    EditorGUILayout.TextField("Event", transform.tag)
                }
-           }
+           }*/
            
            _Logs = GUILayout.Button("Toggle logs from " + transform.name);
            if (_Logs)
