@@ -7,37 +7,63 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UnityEngine.Events;
 using UnityEditorInternal;
+using Variables;
+using DefaultNamespace.ScriptableEvents;
 
 namespace assignment
 {
     public class TestGUI : EditorWindow
     {
         // ReorderableList ???
-        string myString = "Hello World";
-        bool groupEnabled;
-        static bool _Logs;
         bool _Button;
         private Vector2 scroll;
-        
-        [MenuItem("Window/Test Window")]
+        private String[] ScriptableEventsList;
+        bool _ListMade = false;
+
+        [MenuItem("Window/Debug Window")]
         static void Init()
         {
-            TestGUI window = (TestGUI)EditorWindow.GetWindow(typeof(TestGUI));
+            TestGUI window = (TestGUI)GetWindow(typeof(TestGUI));
             window.Show();
+            Scene currentScene = SceneManager.GetActiveScene(); // currently unused
         }
         void OnGUI()
         {
-            _Logs = false;
+            if (!_ListMade)
+            {
+                 ScriptableEventsList = AssetDatabase.FindAssets("t:ScriptableEventBase");
+                 DisplayEvents();
+                _ListMade = true;
+            }
             scroll = GUILayout.BeginScrollView(scroll);
-            _Button = EditorGUILayout.Toggle("Refresh", _Button);
+            _Button = EditorGUILayout.Toggle("Log events", _Button);
             if (_Button)
             {
-                ForEachRootGameObjectInScene(SceneManager.GetActiveScene());
+                PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone, "DisplayEvents");
+            }
+            else
+            {
+                PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone, "");
             }
             GUILayout.EndScrollView();
         }
-        private static void ForEachRootGameObjectInScene(Scene scene)
+
+        private void DisplayEvents()
+        {
+            ScriptableEventBase test;
+            string EventPath;
+            foreach (string st in ScriptableEventsList) // This was a huge waste of time
+            {
+                EventPath = AssetDatabase.GUIDToAssetPath(st);
+                test = (ScriptableEventBase)AssetDatabase.LoadAssetAtPath(EventPath, typeof(ScriptableEventBase));
+                Debug.Log("Path " + EventPath);
+                Debug.Log("OBJ " + test.name);
+            }
+        }
+
+      /*  private static void ForEachRootGameObjectInScene(Scene scene)
         {
             foreach (var go in scene.GetRootGameObjects())
             {
@@ -51,11 +77,12 @@ namespace assignment
            transform.tag = EditorGUILayout.TextField("Tag", transform.tag);
            foreach (Component c in transform.GetComponents<Component>())
            {
-               OnValidFields(c);
+              // OnValidFields(c);
            }
            GUILayout.Space(10);
            GUILayout.EndVertical();
-            for (int i = 0; i < transform.childCount; i++) {
+            for (int i = 0; i < transform.childCount; i++) 
+            {
                 var child = transform.GetChild(i);
                 ForEachChildInTransform(child);
             }
@@ -77,24 +104,18 @@ namespace assignment
 
             foreach (var field in fields) 
             {
+                AddListener(field.GetValue(field));
                 EditorGUILayout.LabelField("Event", field.Name);
                 _Logs = GUILayout.Button("Toggle Event Data");
                 if (_Logs)
                 {
-                    if (field.FieldType.Equals(typeof(Event)))
-                    {
-                        var next = EditorGUILayout.IntField((int) field.GetValue(component));
-                        field.SetValue(component, next);
-                        //(event)field.GetValue(component) += OnEventTriggered();
-                    //    field.SetValue(); += OnEventTriggered();
-                    }
+                    // Toggle something relatated to the debug logs, also supposed to use subscribedEvents
                 }
             }
-        }
-
-        private static void OnEventTriggered()
+        }*/
+        private void WhenEvent()
         {
-            //Debug.Log("Event " + name + " triggered with value " + value);
+            Debug.Log("thing happen");
         }
     }
 }

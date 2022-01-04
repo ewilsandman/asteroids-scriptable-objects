@@ -21,6 +21,9 @@ namespace DefaultNamespace.ScriptableEvents
         public void Raise()
         {
             _eventNoPayload?.Invoke();
+            #if DisplayEvents
+            Debug.Log("Event " + this.name + " triggered with no data");
+            #endif
         }
     }
 
@@ -46,6 +49,9 @@ namespace DefaultNamespace.ScriptableEvents
         public void Raise(TPayload newValue)
         {
             _event?.Invoke(newValue);
+            #if DisplayEvents
+            Debug.Log("Event " + this.name + " triggered with " + newValue.GetType().ToString() + " " + newValue.ToString());
+            #endif
         }
     }
 }
