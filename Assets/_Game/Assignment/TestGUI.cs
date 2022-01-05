@@ -1,25 +1,13 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using UnityEngine.UI;
-using UnityEngine.Events;
-using UnityEditorInternal;
-using Variables;
-using DefaultNamespace.ScriptableEvents;
-using UnityEditor.Compilation;
 
 namespace assignment
 {
     public class TestGUI : EditorWindow
     {
-        bool _Button;
-        private Vector2 scroll;
-        int state;
+        bool _IsLogCheckbox;
+        private Vector2 _scrollVector;
+        bool _state;
 
         [MenuItem("Window/Debug Window")]
         static void Init()
@@ -29,26 +17,24 @@ namespace assignment
         }
         void OnGUI()
         {
-            scroll = GUILayout.BeginScrollView(scroll);
-            _Button = EditorGUILayout.Toggle("Log events", _Button);
-            EditorGUILayout.TextField("(Can take several seconds to take effect)");
-            if (_Button)
+            _scrollVector = GUILayout.BeginScrollView(_scrollVector);
+            _IsLogCheckbox = EditorGUILayout.Toggle("Log events", _IsLogCheckbox);
+            EditorGUILayout.LabelField("(Can take several seconds to take effect)");
+            if (_IsLogCheckbox)
             {
-                if (state == 0)// an attempt to improve framerate
+                if (!_state)// an attempt to improve framerate
                 {
                     PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone, "DisplayEvents");
-                    CompilationPipeline.RequestScriptCompilation();  // an attempt at decreasing the time untill changes take effect
                 }
-                state = 1;
+                _state = true;
             }
             else
             {
-                if (state == 1)
+                if (_state)
                 {
                     PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone, "");
-                    CompilationPipeline.RequestScriptCompilation();  // an attempt at decreasing the time untill changes take effect
                 }
-                state = 0;
+                _state = false;
             }
             GUILayout.EndScrollView();
         }
